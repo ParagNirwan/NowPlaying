@@ -1,0 +1,38 @@
+﻿<Window x:Class="Now_Playing.NowPlayingPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Width="350" Height="100"
+        Opacity="0"
+        WindowStartupLocation="Manual">
+
+    <Border CornerRadius="10" Background="#CC222222" Padding="10">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Album Art -->
+            <Image x:Name="AlbumArt" Width="80" Height="80" 
+                   Stretch="UniformToFill" 
+                   Margin="0,0,10,0" 
+                   Grid.Column="0"/>
+
+            <!-- Song Info -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock x:Name="TitleText" Text="Song Title" 
+                           Foreground="White" FontSize="16" 
+                           FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="ArtistText" Text="Artist Name" 
+                           Foreground="LightGray" FontSize="14" 
+                           TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
