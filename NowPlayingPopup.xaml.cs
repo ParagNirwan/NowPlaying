@@ -4,14 +4,13 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace Now_Playing
 {
     public partial class NowPlayingPopup : Window
     {
-        private readonly DoubleAnimation fadeIn;
-        private readonly DoubleAnimation fadeOut;
-        private readonly System.Windows.Threading.DispatcherTimer autoHideTimer;
+        private readonly DispatcherTimer autoHideTimer;
 
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hwnd, int index, int value);
@@ -22,26 +21,23 @@ namespace Now_Playing
         private const int WS_EX_TOPMOST = 0x00000008;
         private const int WS_EX_TOOLWINDOW = 0x00000080;
 
+        private double startOffset;
+        private double targetTop;
+
         public NowPlayingPopup()
         {
             InitializeComponent();
 
-            fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
-            fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(500));
+            // Initialize transform for animation
+            RootGrid.RenderTransform = new System.Windows.Media.TranslateTransform();
 
-            // Timer for auto-hide
-            autoHideTimer = new System.Windows.Threading.DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(5)
-            };
+            autoHideTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
             autoHideTimer.Tick += (s, e) =>
             {
                 autoHideTimer.Stop();
-                BeginAnimation(OpacityProperty, fadeOut);
-                fadeOut.Completed += (o, ev) => Hide();
+                SlideOut();
             };
 
-            // Make window topmost over games
             Loaded += (s, e) =>
             {
                 var hwnd = new WindowInteropHelper(this).Handle;
@@ -50,29 +46,65 @@ namespace Now_Playing
             };
         }
 
-        public void ShowPopup(string title, string artist, BitmapImage? albumArt = null)
+        public void ShowPopup(string title, string artist, BitmapImage? albumArt = null, string popupPosition = "Bottom")
         {
             Dispatcher.Invoke(() =>
             {
-                // Update song info
                 TitleText.Text = title;
                 ArtistText.Text = artist;
+                AlbumArt.Source = albumArt;
 
-                if (albumArt != null)
-                    AlbumArt.Source = albumArt;
+                // Horizontal center
+                Left = (SystemParameters.WorkArea.Width - Width) / 2;
 
-                // Position at bottom right
-                Left = SystemParameters.WorkArea.Width - Width - 20;
-                Top = SystemParameters.WorkArea.Height - Height - 20;
+                // Determine vertical position
+                if (popupPosition == "Top")
+                {
+                    targetTop = 20;
+                    startOffset = -Height; // slide down from above
+                }
+                else
+                {
+                    targetTop = SystemParameters.WorkArea.Height - Height - 20;
+                    startOffset = Height; // slide up from below
+                }
 
-                // Fade in
-                BeginAnimation(OpacityProperty, fadeIn);
+                Top = targetTop;
+
+                // Reset transform for new slide
+                ((System.Windows.Media.TranslateTransform)RootGrid.RenderTransform).Y = startOffset;
+
                 Show();
 
-                // Reset timer for rapid song changes
-                autoHideTimer.Stop();
-                autoHideTimer.Start();
+                SlideIn();
             });
+        }
+
+        private void SlideIn()
+        {
+            var anim = new DoubleAnimation
+            {
+                From = startOffset,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(400),
+                DecelerationRatio = 0.7
+            };
+            anim.Completed += (s, e) => autoHideTimer.Start();
+            ((System.Windows.Media.TranslateTransform)RootGrid.RenderTransform).BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, anim);
+        }
+
+        private void SlideOut()
+        {
+            double endOffset = (targetTop < SystemParameters.WorkArea.Height / 2) ? -Height : Height;
+            var anim = new DoubleAnimation
+            {
+                From = 0,
+                To = endOffset,
+                Duration = TimeSpan.FromMilliseconds(200),
+                AccelerationRatio = 1.0
+            };
+            anim.Completed += (s, e) => Hide();
+            ((System.Windows.Media.TranslateTransform)RootGrid.RenderTransform).BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, anim);
         }
     }
 }

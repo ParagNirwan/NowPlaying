@@ -5,8 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Now_Playing"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        ResizeMode="NoResize"
+        Title="Now Playing" Height="120" Width="200">
+    <Grid Margin="0,0,0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="0*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Pop-Up Position" VerticalAlignment="Top" Height="16" Width="86"/>
+        <RadioButton x:Name="TopCenterRadio" Content="Top Center" HorizontalAlignment="Left" Margin="22,31,0,0" VerticalAlignment="Top" Width="99" Checked="PopupPositionRadio_Checked" Height="15"/>
+        <RadioButton x:Name="BottomCenterRadio" Content="Bottom Center" HorizontalAlignment="Left" Margin="22,46,0,0" VerticalAlignment="Top" Width="99" IsChecked="True" Checked="PopupPositionRadio_Checked" Height="15"/>
+        <TextBlock HorizontalAlignment="Left" Margin="10,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="200" Height="25"><Run Text="Made with 💖"/><Run Language="en-de" Text=" by Parag Nirwan"/></TextBlock>
 
     </Grid>
 </Window>

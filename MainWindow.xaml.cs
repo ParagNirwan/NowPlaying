@@ -14,6 +14,7 @@ namespace Now_Playing
     {
         private GlobalSystemMediaTransportControlsSessionManager _mediaManager;
         private NowPlayingPopup? popup;
+        private string popupPosition = "Bottom"; // default
 
         public MainWindow()
         {
@@ -66,7 +67,10 @@ namespace Now_Playing
                 if (popup == null)
                     popup = new NowPlayingPopup();
 
-                popup.ShowPopup(title, artist, albumArt);
+                popup.ShowPopup(title, artist, albumArt, popupPosition);
+
+
+                
             });
 
             Console.WriteLine($"{title} by {artist}");
@@ -101,6 +105,13 @@ namespace Now_Playing
             }
 
             return bitmap;
+        }
+        private void PopupPositionRadio_Checked(object sender, RoutedEventArgs e)
+        {
+            if (TopCenterRadio.IsChecked == true)
+                popupPosition = "Top";
+            else if (BottomCenterRadio.IsChecked == true)
+                popupPosition = "Bottom";
         }
 
 
