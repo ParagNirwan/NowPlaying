@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Now_Playing"
         mc:Ignorable="d"
+          Icon="Resources/NowPlaying.ico"
         ResizeMode="NoResize"
         Title="Now Playing" Height="120" Width="200">
     <Grid Margin="0,0,0,0">
