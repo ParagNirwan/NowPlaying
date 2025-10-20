@@ -21,10 +21,16 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Album Art -->
-                <Image x:Name="AlbumArt" Width="80" Height="80" 
-                       Stretch="UniformToFill" 
-                       Margin="0,0,10,0" 
-                       Grid.Column="0"/>
+                <Image x:Name="AlbumArt" Width="80" Height="80"
+       Stretch="UniformToFill"
+       Margin="0,0,10,0"
+       Grid.Column="0">
+                    <Image.Clip>
+                        <RectangleGeometry Rect="0,0,80,80" RadiusX="10" RadiusY="10"/>
+                    </Image.Clip>
+                </Image>
+
+
 
                 <!-- Song Info -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
