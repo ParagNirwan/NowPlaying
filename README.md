@@ -32,7 +32,7 @@ Album Art
 <img width="658" height="220" alt="image" src="https://github.com/user-attachments/assets/6c88863d-8db6-4180-b794-ad8d8b6de924" />
 
 
-Then, it displays this information in a transparent WPF popup that fades in and out automatically.
+Then, it displays this information in a WPF popup that slides in and out automatically.
 
 🛠️ Tech Stack
 Component	Description
