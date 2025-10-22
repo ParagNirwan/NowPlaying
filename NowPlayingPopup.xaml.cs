@@ -93,6 +93,11 @@ namespace Now_Playing
             ((System.Windows.Media.TranslateTransform)RootGrid.RenderTransform).BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, anim);
         }
 
+        public void HidePopup()
+        {
+            this.Hide();
+        }
+
         private void SlideOut()
         {
             double endOffset = (targetTop < SystemParameters.WorkArea.Height / 2) ? -Height : Height;

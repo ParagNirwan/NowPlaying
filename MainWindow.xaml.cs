@@ -35,9 +35,18 @@ namespace Now_Playing
             var currentSession = _mediaManager.GetCurrentSession();
             if (currentSession != null)
             {
-                currentSession.MediaPropertiesChanged += CurrentSession_MediaPropertiesChanged;
+                SubscribeToSession(currentSession);
                 await ShowCurrentTrack(currentSession);
             }
+        }
+
+        private void SubscribeToSession(GlobalSystemMediaTransportControlsSession session)
+        {
+            session.MediaPropertiesChanged -= CurrentSession_MediaPropertiesChanged;
+            session.PlaybackInfoChanged -= CurrentSession_PlaybackInfoChanged;
+
+            session.MediaPropertiesChanged += CurrentSession_MediaPropertiesChanged;
+            session.PlaybackInfoChanged += CurrentSession_PlaybackInfoChanged;
         }
 
         private async void MediaManager_CurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager sender, CurrentSessionChangedEventArgs args)
@@ -45,8 +54,15 @@ namespace Now_Playing
             var currentSession = sender.GetCurrentSession();
             if (currentSession != null)
             {
-                currentSession.MediaPropertiesChanged += CurrentSession_MediaPropertiesChanged;
+                SubscribeToSession(currentSession);
                 await ShowCurrentTrack(currentSession);
+            }
+            else
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    popup?.HidePopup();
+                });
             }
         }
 
@@ -55,27 +71,48 @@ namespace Now_Playing
             await ShowCurrentTrack(session);
         }
 
-        private async Task ShowCurrentTrack(GlobalSystemMediaTransportControlsSession session)
+        private async void CurrentSession_PlaybackInfoChanged(GlobalSystemMediaTransportControlsSession session, PlaybackInfoChangedEventArgs args)
         {
-            var props = await session.TryGetMediaPropertiesAsync();
-            var title = props.Title;
-            var artist = props.Artist;
-            var albumArt = await GetAlbumArt(props);
-
-            Dispatcher.Invoke(() =>
-            {
-                if (popup == null)
-                    popup = new NowPlayingPopup();
-
-                popup.ShowPopup(title, artist, albumArt, popupPosition);
-
-
-                
-            });
-
-            Console.WriteLine($"{title} by {artist}");
+            await ShowCurrentTrack(session);
         }
 
+        private async Task ShowCurrentTrack(GlobalSystemMediaTransportControlsSession session)
+        {
+            try
+            {
+                var playbackInfo = session.GetPlaybackInfo();
+                var status = playbackInfo?.PlaybackStatus;
+
+                // If not playing, hide popup
+                if (status != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        popup?.HidePopup();
+                    });
+                    return;
+                }
+
+                var props = await session.TryGetMediaPropertiesAsync();
+                var title = props.Title;
+                var artist = props.Artist;
+                var albumArt = await GetAlbumArt(props);
+
+                Dispatcher.Invoke(() =>
+                {
+                    if (popup == null)
+                        popup = new NowPlayingPopup();
+
+                    popup.ShowPopup(title, artist, albumArt, popupPosition);
+                });
+
+                Console.WriteLine($"{title} by {artist}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in ShowCurrentTrack: {ex.Message}");
+            }
+        }
 
         private async Task<BitmapImage?> GetAlbumArt(GlobalSystemMediaTransportControlsSessionMediaProperties props)
         {
@@ -99,13 +136,12 @@ namespace Now_Playing
                 bitmap.StreamSource = memoryStream;
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
-
-                // Make the bitmap cross-thread accessible
                 bitmap.Freeze();
             }
 
             return bitmap;
         }
+
         private void PopupPositionRadio_Checked(object sender, RoutedEventArgs e)
         {
             if (TopCenterRadio.IsChecked == true)
@@ -113,7 +149,5 @@ namespace Now_Playing
             else if (BottomCenterRadio.IsChecked == true)
                 popupPosition = "Bottom";
         }
-
-
     }
 }
